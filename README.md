@@ -22,7 +22,7 @@
 
 ### Prerequisites
 
-- Python 3.7.x or higher installed.
+- Python 3.7 or higher installed.
 - `pip` package manager.
 
 ### Installation Steps
