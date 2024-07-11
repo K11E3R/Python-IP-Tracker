@@ -1,16 +1,34 @@
 #!/usr/bin/env python3
 
-import sys
-import subprocess
-import importlib.util
+"""
+YouSeeMe - Python IP Tracker
+
+Author: K11E3R (https://github.com/K11E3R)
+Description: This script allows users to track IP information using various APIs.
+
+"""
 import asyncio
-import aiohttp
-import json
-import colorama
+import importlib.util
 import os
+import subprocess
+import sys
+
+import aiohttp
+import colorama
 
 # Function to check and install required libraries if not present
+
+
 def check_install_libraries(libraries):
+    """
+    Checks if required libraries are installed and installs them if missing.
+
+    Args:
+        libraries (list): List of library names to check.
+
+    Returns:
+        bool: True if all libraries are installed, False otherwise.
+    """
     missing_libraries = []
     for lib in libraries:
         spec = importlib.util.find_spec(lib)
@@ -21,14 +39,20 @@ def check_install_libraries(libraries):
     if missing_libraries:
         print(colorama.Fore.YELLOW + "Attempting to install missing libraries...")
         try:
-            subprocess.check_call([sys.executable, '-m', 'pip', 'install'] + missing_libraries)
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install"] + missing_libraries
+            )
         except subprocess.CalledProcessError:
-            print(colorama.Fore.RED + "Failed to install missing libraries. Please install manually.")
+            print(
+                colorama.Fore.RED
+                + "Failed to install missing libraries. Please install manually."
+            )
             return False
     return True
 
+
 # Check and install required libraries
-required_libraries = ['aiohttp', 'colorama']
+required_libraries = ["aiohttp", "colorama"]
 if not check_install_libraries(required_libraries):
     sys.exit(1)
 
@@ -43,12 +67,22 @@ API_URLS = [
     "https://ipwhois.app/json/",
 ]
 
+
 def clear_screen():
     """Function to clear the screen based on OS type."""
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system("cls" if os.name == "nt" else "clear")
+
 
 async def check_api_access(session, url):
-    """Async function to check if the API URL is accessible."""
+    """Async function to check if the API URL is accessible.
+
+    Args:
+        session (aiohttp.ClientSession): The HTTP client session.
+        url (str): The API URL to check.
+
+    Returns:
+        bool: True if the API URL is accessible, False otherwise.
+    """
     try:
         async with session.get(url, timeout=10) as response:
             return response.status == 200
@@ -57,29 +91,50 @@ async def check_api_access(session, url):
     except asyncio.TimeoutError:
         return False
 
+
 MAX_RETRY_ATTEMPTS = 3
 
+
 async def fetch_ip_data(session, url, ip):
-    """Async function to fetch IP data from API."""
+    """Async function to fetch IP data from API.
+
+    Args:
+        session (aiohttp.ClientSession): The HTTP client session.
+        url (str): The API URL to fetch data from.
+        ip (str): The IP address to fetch data for.
+
+    Returns:
+        dict: The IP data if fetched successfully, None otherwise.
+    """
     retry_count = 0
     while retry_count < MAX_RETRY_ATTEMPTS:
         try:
             async with session.get(f"{url}{ip}", timeout=10) as response:
                 if response.status == 200:
                     return await response.json()
-                else:
-                    print(colorama.Fore.YELLOW + f"Failed to fetch data from {url}. Retrying...")
+                print(
+                    colorama.Fore.YELLOW
+                    + f"Failed to fetch data from {url}. Retrying..."
+                )
         except aiohttp.ClientError:
             print(colorama.Fore.YELLOW + f"Failed to connect to {url}. Retrying...")
         except asyncio.TimeoutError:
-            print(colorama.Fore.YELLOW + f"Timeout occurred while connecting to {url}. Retrying...")
-        
+            print(
+                colorama.Fore.YELLOW
+                + f"Timeout occurred while connecting to {url}. Retrying..."
+            )
+
         retry_count += 1
-    
+
     return None
 
+
 def print_ip_data(values):
-    """Function to print IP data."""
+    """Function to print IP data.
+
+    Args:
+        values (dict): The IP data to print.
+    """
     if values:
         print("------------------------------------")
         print(f" {colorama.Fore.GREEN}IP           :  {values.get('ip')}")
@@ -96,8 +151,13 @@ def print_ip_data(values):
     else:
         print(colorama.Fore.RED + "No data found for the provided IP.")
 
+
 async def test_api_urls():
-    """Async function to test API URLs for accessibility."""
+    """Async function to test API URLs for accessibility.
+
+    Returns:
+        list: List of accessible API URLs.
+    """
     async with aiohttp.ClientSession() as session:
         accessible_urls = []
         for url in API_URLS:
@@ -106,28 +166,35 @@ async def test_api_urls():
                 accessible_urls.append(url)
                 print(colorama.Fore.GREEN + f"API URL {url} is accessible.")
             else:
-                print(colorama.Fore.YELLOW + f"API URL {url} is not accessible or requires authorization.")
+                print(
+                    colorama.Fore.YELLOW
+                    + f"API URL {url} is not accessible or requires authorization."
+                )
 
         return accessible_urls
+
 
 async def main():
     """Main asynchronous function to run the program."""
     clear_screen()
     colorama.init(autoreset=True)
-    print(colorama.Fore.RED + """
-▓██   ██▓ ▒█████   █    ██   ██████ ▓█████ ▓█████  ███▄ ▄███▓▓█████ 
- ▒██  ██▒▒██▒  ██▒ ██  ▓██▒▒██    ▒ ▓█   ▀ ▓█   ▀ ▓██▒▀█▀ ██▒▓█   ▀ 
-  ▒██ ██░▒██░  ██▒▓██  ▒██░░ ▓██▄   ▒███   ▒███   ▓██    ▓██░▒███   
-  ░ ▐██▓░▒██   ██░▓▓█  ░██░  ▒   ██▒▒▓█  ▄ ▒▓█  ▄ ▒██    ▒██ ▒▓█  ▄ 
+    print(
+        colorama.Fore.RED
+        + """
+▓██   ██▓ ▒█████   █    ██   ██████ ▓█████ ▓█████  ███▄ ▄███▓▓█████
+ ▒██  ██▒▒██▒  ██▒ ██  ▓██▒▒██    ▒ ▓█   ▀ ▓█   ▀ ▓██▒▀█▀ ██▒▓█   ▀
+  ▒██ ██░▒██░  ██▒▓██  ▒██░░ ▓██▄   ▒███   ▒███   ▓██    ▓██░▒███
+  ░ ▐██▓░▒██   ██░▓▓█  ░██░  ▒   ██▒▒▓█  ▄ ▒▓█  ▄ ▒██    ▒██ ▒▓█  ▄
   ░ ██▒▓░░ ████▓▒░▒▒█████▓ ▒██████▒▒░▒████▒░▒████▒▒██▒   ░██▒░▒████▒
    ██▒▒▒ ░ ▒░▒░▒░ ░▒▓▒ ▒ ▒ ▒ ▒▓▒ ▒ ░░░ ▒░ ░░░ ▒░ ░░ ▒░   ░  ░░░ ▒░ ░
  ▓██ ░▒░   ░ ▒ ▒░ ░░▒░ ░ ░ ░ ░▒  ░ ░ ░ ░  ░ ░ ░  ░░  ░      ░ ░ ░  ░
- ▒ ▒ ░░  ░ ░ ░ ▒   ░░░ ░ ░ ░  ░  ░     ░      ░   ░      ░      ░   
+ ▒ ▒ ░░  ░ ░ ░ ▒   ░░░ ░ ░ ░  ░  ░     ░      ░   ░      ░      ░
  ░ ░         ░ ░     ░           ░     ░  ░   ░  ░       ░      ░  ░
- ░ ░                                                                
-                                                             
+ ░ ░
+
                     Python IP Tracker - K11E3R
-    """)
+    """
+    )
 
     # Test API URLs for accessibility
     accessible_urls = await test_api_urls()
@@ -138,7 +205,7 @@ async def main():
     async with aiohttp.ClientSession() as session:
         while True:
             ip = input("Enter target IP address (or 'exit' to quit): ").strip()
-            if ip.lower() == 'exit':
+            if ip.lower() == "exit":
                 break
 
             if not ip:
@@ -153,6 +220,7 @@ async def main():
                     break
 
             print_ip_data(ip_data)
+
 
 if __name__ == "__main__":
     try:
