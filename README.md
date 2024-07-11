@@ -50,7 +50,7 @@
 1. Run the script:
 
    ```bash
-   python ip_tracker.py
+   python you_see_me.py
    ```
 
 2. Enter the IP address you want to track when prompted.
